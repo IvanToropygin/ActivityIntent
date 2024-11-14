@@ -44,9 +44,9 @@ class SenderActivity : AppCompatActivity() {
             action = Intent.ACTION_SEND
             type = "text/plain"
             addCategory(Intent.CATEGORY_DEFAULT)
-            intent.putExtra(TITLE_KEY, "Славные парни")
-            intent.putExtra(YEAR_KEY, "2016")
-            intent.putExtra(
+            putExtra(TITLE_KEY, "Славные парни")
+            putExtra(YEAR_KEY, "2016")
+            putExtra(
                 DESCRIPTION_KEY,
                 """
                     Что бывает, когда напарником брутального костолома становится субтильный лопух?
