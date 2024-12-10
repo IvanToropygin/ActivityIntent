@@ -44,7 +44,7 @@ class EditProfileActivity : AppCompatActivity() {
                 .setNegativeButton(resources.getString(R.string.make_photo)) { _, _ ->
                     launchPermissionCameraLauncher()
                 }.setPositiveButton(resources.getString(R.string.choose_photo)) { _, _ ->
-                    // Respond to positive button press
+                    takePicture.launch("image/*")
                 }
                 .show()
         }
@@ -91,6 +91,13 @@ class EditProfileActivity : AppCompatActivity() {
                 R.string.abort
             ) { dialog: DialogInterface, _: Int -> dialog.dismiss() }
             .show()
+    }
+
+    private val takePicture = registerForActivityResult(ActivityResultContracts.GetContent()) {
+        uri ->
+        if (uri != null) {
+            populateImage(uri)
+        }
     }
 
     /**
