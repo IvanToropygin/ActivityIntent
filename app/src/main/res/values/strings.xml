@@ -3,4 +3,5 @@
     <string name="title_send">Отправить</string>
     <string name="make_photo">Сделать фото</string>
     <string name="choose_photo">Выбрать фото</string>
+    <string name="abort">Отмена</string>
 </resources>

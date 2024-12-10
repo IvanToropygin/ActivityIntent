@@ -8,7 +8,6 @@ import android.net.Uri
 import android.os.Bundle
 import android.provider.Settings
 import android.widget.ImageView
-import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
@@ -73,8 +72,8 @@ class EditProfileActivity : AppCompatActivity() {
         AlertDialog.Builder(this)
             .setTitle("Необходим доступ к камере")
             .setMessage("Это необходимо для того, чтобы сделать фото профиля.")
-            .setPositiveButton("Дать доступ") { dialog, which -> launchPermissionCameraLauncher() }
-            .setNegativeButton("Отмена") { dialog, which -> dialog.dismiss() }
+            .setPositiveButton("Дать доступ") { _, _ -> launchPermissionCameraLauncher() }
+            .setNegativeButton(getString(R.string.abort)) { dialog, _ -> dialog.dismiss() }
             .show()
     }
 
@@ -82,15 +81,15 @@ class EditProfileActivity : AppCompatActivity() {
         AlertDialog.Builder(this)
             .setTitle("Доступ к камере отключен")
             .setMessage("Пожалуйста, разрешите доступ к камере в настройках приложения.")
-            .setPositiveButton("Открыть настройки") { dialog: DialogInterface?, which: Int ->
+            .setPositiveButton("Открыть настройки") { _: DialogInterface?, _: Int ->
                 val intent = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS)
                 val uri = Uri.fromParts("package", packageName, null)
                 intent.setData(uri)
                 startActivity(intent)
             }
             .setNegativeButton(
-                "Отмена"
-            ) { dialog: DialogInterface, which: Int -> dialog.dismiss() }
+                R.string.abort
+            ) { dialog: DialogInterface, _: Int -> dialog.dismiss() }
             .show()
     }
 
