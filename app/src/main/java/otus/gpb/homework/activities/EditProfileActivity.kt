@@ -10,6 +10,7 @@ import android.provider.Settings
 import android.widget.Button
 import android.widget.ImageView
 import android.widget.TextView
+import android.widget.Toast
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AlertDialog
@@ -27,6 +28,7 @@ class EditProfileActivity : AppCompatActivity() {
     private lateinit var surname: TextView
     private lateinit var age: TextView
     private lateinit var startForResult: ActivityResultLauncher<Intent>
+    private var imageUri: Uri? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -71,19 +73,24 @@ class EditProfileActivity : AppCompatActivity() {
         }
 
         editProfileBtn.setOnClickListener {
-            val name = name.text.toString()
-            val surname = surname.text.toString()
-            val age = age.text.toString()
 
             val intent = Intent(this, FillFormActivity::class.java)
             val profileData: Profile
 
-            if (name.isNotBlank() || surname.isNotBlank() || age.isNotBlank()) {
-                profileData = Profile(name, surname, age.toInt())
+            if (checkTextViewsNotEmpty()) {
+                profileData = Profile(name = name.text.toString(),
+                    surname = surname.text.toString(),
+                    age = age.text.toString().toInt())
                 intent.putExtra(FillFormActivity.EXTRA_PROFILE_KEY, profileData)
             }
 
             startForResult.launch(intent) }
+    }
+
+    private fun checkTextViewsNotEmpty(): Boolean {
+        return (name.text.toString().isNotBlank() ||
+                surname.text.toString().isNotBlank() ||
+                age.text.toString().isNotBlank())
     }
 
     private fun launchPermissionCameraLauncher() {
@@ -133,6 +140,7 @@ class EditProfileActivity : AppCompatActivity() {
         uri ->
         if (uri != null) {
             populateImage(uri)
+            imageUri = uri
         }
     }
 
@@ -145,6 +153,32 @@ class EditProfileActivity : AppCompatActivity() {
     }
 
     private fun openSenderApp() {
-        TODO("В качестве реализации метода отправьте неявный Intent чтобы поделиться профилем. В качестве extras передайте заполненные строки и картинку")
+//        "В качестве реализации метода отправьте неявный Intent чтобы поделиться профилем. В качестве extras передайте заполненные строки и картинку"
+        if (!checkTextViewsNotEmpty()) {
+            Toast.makeText(this, "Need fill the profile before sending!", Toast.LENGTH_SHORT).show()
+            return
+        }
+
+        val intent = Intent(Intent.ACTION_SEND).apply {
+            type = "image/*"
+            putExtra(EXTRA_NAME_KEY, name.text)
+            putExtra(EXTRA_SURNAME_KEY, surname.text)
+            putExtra(EXTRA_AGE_KEY, age.text)
+            putExtra(EXTRA_AVATAR_KEY, imageUri)
+            setPackage("org.telegram.messenger")
+        }
+
+        if (intent.resolveActivity(packageManager) != null) {
+            startActivity(intent)
+        } else {
+            Toast.makeText(this, "Telegram app not install yet", Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    companion object {
+        const val EXTRA_NAME_KEY = "EXTRA_NAME_KEY"
+        const val EXTRA_SURNAME_KEY = "EXTRA_SURNAME_KEY"
+        const val EXTRA_AGE_KEY = "EXTRA_AGE_KEY"
+        const val EXTRA_AVATAR_KEY = "EXTRA_AVATAR_KEY"
     }
 }
