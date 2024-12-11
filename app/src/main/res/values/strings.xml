@@ -4,4 +4,8 @@
     <string name="make_photo">Сделать фото</string>
     <string name="choose_photo">Выбрать фото</string>
     <string name="abort">Отмена</string>
+    <string name="name_hint">Name</string>
+    <string name="surname_hint">Surname</string>
+    <string name="age_hint">Age</string>
+    <string name="btn_apply">Применить</string>
 </resources>

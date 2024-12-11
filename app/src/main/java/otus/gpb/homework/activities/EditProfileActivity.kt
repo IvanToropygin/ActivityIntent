@@ -7,7 +7,10 @@ import android.graphics.BitmapFactory
 import android.net.Uri
 import android.os.Bundle
 import android.provider.Settings
+import android.widget.Button
 import android.widget.ImageView
+import android.widget.TextView
+import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
@@ -19,11 +22,21 @@ import com.google.android.material.dialog.MaterialAlertDialogBuilder
 class EditProfileActivity : AppCompatActivity() {
 
     private lateinit var imageView: ImageView
+    private lateinit var editProfileBtn: Button
+    private lateinit var name: TextView
+    private lateinit var surname: TextView
+    private lateinit var age: TextView
+    private lateinit var startForResult: ActivityResultLauncher<Intent>
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_edit_profile)
         imageView = findViewById(R.id.imageview_photo)
+        editProfileBtn = findViewById(R.id.button4)
+        name = findViewById(R.id.textview_name)
+        surname = findViewById(R.id.textview_surname)
+        age = findViewById(R.id.textview_age)
+
 
         findViewById<Toolbar>(R.id.toolbar).apply {
             inflateMenu(R.menu.menu)
@@ -33,7 +46,6 @@ class EditProfileActivity : AppCompatActivity() {
                         openSenderApp()
                         true
                     }
-
                     else -> false
                 }
             }
@@ -48,6 +60,30 @@ class EditProfileActivity : AppCompatActivity() {
                 }
                 .show()
         }
+
+        startForResult = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+            if (result.resultCode == RESULT_OK) {
+                val returnedProfile: Profile? = result.data?.getParcelableExtra(FillFormActivity.EXTRA_PROFILE_KEY)
+                name.text = returnedProfile?.name
+                surname.text = returnedProfile?.surname
+                age.text = returnedProfile?.age.toString()
+            }
+        }
+
+        editProfileBtn.setOnClickListener {
+            val name = name.text.toString()
+            val surname = surname.text.toString()
+            val age = age.text.toString()
+
+            val intent = Intent(this, FillFormActivity::class.java)
+            val profileData: Profile
+
+            if (name.isNotBlank() || surname.isNotBlank() || age.isNotBlank()) {
+                profileData = Profile(name, surname, age.toInt())
+                intent.putExtra(FillFormActivity.EXTRA_PROFILE_KEY, profileData)
+            }
+
+            startForResult.launch(intent) }
     }
 
     private fun launchPermissionCameraLauncher() {
