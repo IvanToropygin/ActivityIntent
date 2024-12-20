@@ -1,8 +1,11 @@
 package otus.gpb.homework.activities
 
 import android.Manifest
+import android.annotation.SuppressLint
 import android.content.DialogInterface
 import android.content.Intent
+import android.content.Intent.ACTION_SEND
+import android.content.Intent.EXTRA_TEXT
 import android.graphics.BitmapFactory
 import android.net.Uri
 import android.os.Bundle
@@ -48,6 +51,7 @@ class EditProfileActivity : AppCompatActivity() {
                         openSenderApp()
                         true
                     }
+
                     else -> false
                 }
             }
@@ -63,14 +67,16 @@ class EditProfileActivity : AppCompatActivity() {
                 .show()
         }
 
-        startForResult = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
-            if (result.resultCode == RESULT_OK) {
-                val returnedProfile: Profile? = result.data?.getParcelableExtra(FillFormActivity.EXTRA_PROFILE_KEY)
-                name.text = returnedProfile?.name
-                surname.text = returnedProfile?.surname
-                age.text = returnedProfile?.age.toString()
+        startForResult =
+            registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+                if (result.resultCode == RESULT_OK) {
+                    val returnedProfile: Profile? =
+                        result.data?.getParcelableExtra(FillFormActivity.EXTRA_PROFILE_KEY)
+                    name.text = returnedProfile?.name
+                    surname.text = returnedProfile?.surname
+                    age.text = returnedProfile?.age.toString()
+                }
             }
-        }
 
         editProfileBtn.setOnClickListener {
 
@@ -78,13 +84,16 @@ class EditProfileActivity : AppCompatActivity() {
             val profileData: Profile
 
             if (checkTextViewsNotEmpty()) {
-                profileData = Profile(name = name.text.toString(),
+                profileData = Profile(
+                    name = name.text.toString(),
                     surname = surname.text.toString(),
-                    age = age.text.toString().toInt())
+                    age = age.text.toString().toInt()
+                )
                 intent.putExtra(FillFormActivity.EXTRA_PROFILE_KEY, profileData)
             }
 
-            startForResult.launch(intent) }
+            startForResult.launch(intent)
+        }
     }
 
     private fun checkTextViewsNotEmpty(): Boolean {
@@ -136,13 +145,13 @@ class EditProfileActivity : AppCompatActivity() {
             .show()
     }
 
-    private val takePicture = registerForActivityResult(ActivityResultContracts.GetContent()) {
-        uri ->
-        if (uri != null) {
-            populateImage(uri)
-            imageUri = uri
+    private val takePicture =
+        registerForActivityResult(ActivityResultContracts.GetContent()) { uri ->
+            if (uri != null) {
+                populateImage(uri)
+                imageUri = uri
+            }
         }
-    }
 
     /**
      * Используйте этот метод чтобы отобразить картинку полученную из медиатеки в ImageView
@@ -152,33 +161,54 @@ class EditProfileActivity : AppCompatActivity() {
         imageView.setImageBitmap(bitmap)
     }
 
+//    private fun openSenderApp() {
+////        "В качестве реализации метода отправьте неявный Intent чтобы поделиться профилем. В качестве extras передайте заполненные строки и картинку"
+//        if (!checkTextViewsNotEmpty()) {
+//            Toast.makeText(this, "Need fill the profile before sending!", Toast.LENGTH_SHORT).show()
+//            return
+//        }
+//
+//        val intent = Intent(Intent.ACTION_SEND).apply {
+//            type = "image/*"
+//            putExtra(EXTRA_NAME_KEY, name.text)
+//            putExtra(EXTRA_SURNAME_KEY, surname.text)
+//            putExtra(EXTRA_AGE_KEY, age.text)
+//            putExtra(EXTRA_AVATAR_KEY, imageUri)
+//            setPackage("org.telegram.messenger")
+//        }
+//
+//        if (intent.resolveActivity(packageManager) != null) {
+//            startActivity(intent)
+//        } else {
+//            Toast.makeText(this, "Telegram app not install yet", Toast.LENGTH_SHORT).show()
+//        }
+//    }
+
+    @SuppressLint("QueryPermissionsNeeded")
     private fun openSenderApp() {
-//        "В качестве реализации метода отправьте неявный Intent чтобы поделиться профилем. В качестве extras передайте заполненные строки и картинку"
-        if (!checkTextViewsNotEmpty()) {
-            Toast.makeText(this, "Need fill the profile before sending!", Toast.LENGTH_SHORT).show()
-            return
+        val intent = Intent(ACTION_SEND).apply {
+            putExtra(EXTRA_TEXT, "Имя ${name.text}. Фамилия ${surname.text}. Возраст ${age.text}")
+            type = "image/*"
+            setPackage("org.telegram.messenger")
         }
 
-        val intent = Intent(Intent.ACTION_SEND).apply {
-            type = "image/*"
-            putExtra(EXTRA_NAME_KEY, name.text)
-            putExtra(EXTRA_SURNAME_KEY, surname.text)
-            putExtra(EXTRA_AGE_KEY, age.text)
-            putExtra(EXTRA_AVATAR_KEY, imageUri)
-            setPackage("org.telegram.messenger")
+        // Проверяем, есть ли изображение и добавляем его в intent
+        imageUri?.let {
+            intent.putExtra(Intent.EXTRA_STREAM, it)
         }
 
         if (intent.resolveActivity(packageManager) != null) {
             startActivity(intent)
         } else {
-            Toast.makeText(this, "Telegram app not install yet", Toast.LENGTH_SHORT).show()
+            val chooser = Intent.createChooser(intent, "Поделиться профилем")
+            startActivity(chooser)
         }
     }
 
-    companion object {
-        const val EXTRA_NAME_KEY = "EXTRA_NAME_KEY"
-        const val EXTRA_SURNAME_KEY = "EXTRA_SURNAME_KEY"
-        const val EXTRA_AGE_KEY = "EXTRA_AGE_KEY"
-        const val EXTRA_AVATAR_KEY = "EXTRA_AVATAR_KEY"
-    }
+//    companion object {
+//        const val EXTRA_NAME_KEY = "EXTRA_NAME_KEY"
+//        const val EXTRA_SURNAME_KEY = "EXTRA_SURNAME_KEY"
+//        const val EXTRA_AGE_KEY = "EXTRA_AGE_KEY"
+//        const val EXTRA_AVATAR_KEY = "EXTRA_AVATAR_KEY"
+//    }
 }
